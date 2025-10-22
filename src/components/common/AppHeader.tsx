@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 
 type AppNavigation = NavigationProp<any, any>;
 
-const Logo = require('../../assets/images/logo.png'); 
+const Logo = require('../../assets/images/logoheader.png'); 
 
 export function AppHeader() {
   const { user, logout } = useAuth();
@@ -17,21 +17,25 @@ export function AppHeader() {
 
     const initials = user?.email ? user.email.substring(0, 2).toUpperCase() : 'GA';
     const displayName = user?.email || 'Usuário';
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const isProfessor = user?.role === 'professor';
 
     return (
-        <View style={styles.header}>
+  <View style={styles.header}>
             <View style={styles.logoContainer}>
-                <Image source={Logo} style={styles.logo} />
-                <Text style={styles.logoText}>Centro Educacional Alfa</Text>
+                {/* 💡 Exibe o novo logo sozinho */}
+                <Image source={Logo} style={styles.logo} /> 
             </View>
 
             <View style={styles.userContainer}>
+                {/* 💡 Avatar e Nome do Usuário */}
                 <View style={styles.avatar}>
                     <Text style={styles.avatarText}>{initials}</Text>
                 </View>
-                <Text style={styles.username}>{displayName}</Text>
-
+                <Text style={styles.username} numberOfLines={1} ellipsizeMode="tail">
+                    {displayName}
+                </Text>
+                {/* Ícone de Logout */}
                 <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
                     <Feather name="log-out" size={20} color="#fff" />
                 </TouchableOpacity>

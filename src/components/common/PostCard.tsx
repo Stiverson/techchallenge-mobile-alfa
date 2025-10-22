@@ -1,5 +1,5 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { type Comunicacao } from '../../types/comunicacao';
 
@@ -12,19 +12,25 @@ interface PostCardProps {
 }
 
 export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostCardProps) {
-  
-    const [isMenuVisible, setIsMenuVisible] = React.useState(false);
-
+    const [isMenuVisible, setIsMenuVisible] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true); // Mantemos TRUE para o visual do Figma (aberto)
     
+    // Funções de Ação
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const shortDescription = item.descricao.length > 100 
         ? item.descricao.substring(0, 100) + '...'
         : item.descricao;
 
     const handleMenuToggle = () => {
-       
         if (isProfessor) {
             setIsMenuVisible(!isMenuVisible);
+            setIsExpanded(false); 
         }
+    };
+    
+    const handleExpandToggle = () => {
+        setIsExpanded(!isExpanded);
+        setIsMenuVisible(false);
     };
 
     const handleEditAction = () => {
@@ -39,18 +45,21 @@ export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostC
 
     return (
         <View style={styles.cardWrapper}>
-           
+            
             <View style={styles.topRow}>
-                <TouchableOpacity onPress={onPress} style={styles.titleContainer}>
+                {/* 💡 Ação de Expansão no Título/Autor */}
+                <TouchableOpacity onPress={handleExpandToggle} style={styles.titleContainer}>
+                    {/* Título Principal */}
                     <Text style={styles.title} numberOfLines={1}>{item.titulo}</Text>
+                    
+                    {/* Linha do Autor e o Chevron */}
                     <View style={styles.authorContainer}>
                         <Text style={styles.author}>{item.autor}</Text>
-                        
-                        <Feather name="chevron-up" size={16} color="#666" style={styles.chevronIcon} /> 
+                        <Feather name={isExpanded ? "chevron-up" : "chevron-down"} size={16} color="#666" style={styles.chevronIcon} /> 
                     </View>
                 </TouchableOpacity>
 
-             
+                {/* Ícone de Ações Detalhadas (Três Pontos) */}
                 {isProfessor ? (
                     <TouchableOpacity onPress={handleMenuToggle} style={styles.menuButton}>
                         <Ionicons name="ellipsis-vertical" size={24} color="#333" />
@@ -60,7 +69,7 @@ export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostC
                 )}
             </View>
 
-            
+            {/* Menu Dropdown de Edição/Deleção (Condicional) */}
             {isMenuVisible && isProfessor && (
                 <View style={styles.adminMenu}>
                     <TouchableOpacity onPress={handleEditAction} style={styles.adminMenuItem}>
@@ -72,34 +81,39 @@ export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostC
                 </View>
             )}
 
-          
+            {/* 💡 CONTEÚDO EXPANDIDO (Descrição e Metadados) */}
             <View style={styles.contentArea}>
-                <Text style={styles.descriptionText} numberOfLines={2}>
-                    {shortDescription}
+                <Text style={styles.descriptionText} numberOfLines={isExpanded ? 0 : 2}>
+                    {item.descricao}
                 </Text>
 
-              
-                <View style={styles.metadataRow}>
-                    <View style={styles.metadataItem}>
-                        <Text style={styles.metadataLabel}>🗓️ Data criação</Text>
-                        <Text style={styles.metadataValue}>{new Date(item.dataCriacao).toLocaleDateString()}</Text>
+                {/* 💡 METADADOS: Em duas colunas por linha (Figma) */}
+                {isExpanded && (
+                    <View style={styles.metadataGrid}>
+                        {/* Data Criação */}
+                        <View style={styles.metadataItemGrid}>
+                            <Text style={styles.metadataLabel}>🗓️ Data criação</Text>
+                            <Text style={styles.metadataValue}>{new Date(item.dataCriacao).toLocaleDateString()}</Text>
+                        </View>
+                        {/* Data Atualização */}
+                        <View style={styles.metadataItemGrid}>
+                            <Text style={styles.metadataLabel}>🗓️ Data atualização</Text>
+                            <Text style={styles.metadataValue}>{new Date(item.dataAtualizacao).toLocaleDateString()}</Text>
+                        </View>
+                        {/* Tipo */}
+                        <View style={styles.metadataItemGrid}>
+                            <Text style={styles.metadataLabel}>Tipo</Text>
+                            <Text style={styles.typeTag}>{item.tipo}</Text>
+                        </View>
                     </View>
-                    <View style={styles.metadataItem}>
-                        <Text style={styles.metadataLabel}>🗓️ Data atualização</Text>
-                        <Text style={styles.metadataValue}>{new Date(item.dataAtualizacao).toLocaleDateString()}</Text>
-                    </View>
-                    <View style={styles.metadataItem}>
-                        <Text style={styles.metadataLabel}>Tipo</Text>
-                        <Text style={styles.typeTag}>{item.tipo}</Text>
-                    </View>
-                </View>
+                )}
             </View>
         </View>
     );
 }
+// ... (Estilos)
 
 const styles = StyleSheet.create({
-    
     cardWrapper: {
         backgroundColor: '#fff',
         borderRadius: 16, 
@@ -112,8 +126,6 @@ const styles = StyleSheet.create({
         elevation: 5,
         overflow: 'visible', 
     },
-
-  
     topRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -141,8 +153,6 @@ const styles = StyleSheet.create({
     chevronIcon: {
         marginTop: 2,
     },
-
-    
     menuButton: {
         padding: 5,
         marginLeft: 10,
@@ -171,8 +181,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#333',
     },
-
-    // 💡 ÁREA DE CONTEÚDO
     contentArea: {
         borderTopWidth: 1,
         borderTopColor: '#eee',
@@ -184,17 +192,15 @@ const styles = StyleSheet.create({
         color: '#555',
         marginBottom: 10,
     },
-
-    // 💡 METADADOS
-    metadataRow: {
+    metadataGrid: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
         justifyContent: 'space-between',
         marginTop: 10,
-        flexWrap: 'wrap',
     },
-    metadataItem: {
-        minWidth: '45%',
-        marginBottom: 8,
+    metadataItemGrid: {
+        width: '48%',
+        marginBottom: 10,
     },
     metadataLabel: {
         fontSize: 12,

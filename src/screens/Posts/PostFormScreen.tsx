@@ -1,7 +1,7 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import { apiCreatePost, apiUpdatePost } from '../../api/posts';
 import { useAuth } from '../../context/AuthContext';
 import { type Comunicacao, type ComunicacaoForm } from '../../types/comunicacao';
@@ -39,7 +39,7 @@ export function PostFormScreen() {
             navigation.goBack();
         },
         onError: (error) => {
-            alert(`Erro ao criar: ${error.message}`);
+            Alert.alert(`Erro ao criar: ${error.message}`);
         }
     });
 
@@ -51,7 +51,7 @@ export function PostFormScreen() {
             navigation.goBack();
         },
         onError: (error) => {
-            alert(`Erro ao editar: ${error.message}`);
+            Alert.alert(`Erro ao editar: ${error.message}`);
         }
     });
 
@@ -60,11 +60,11 @@ export function PostFormScreen() {
     
     const handleSubmit = () => {
         if (!isProfessor) {
-            alert("Apenas professores podem criar/editar posts.");
+            Alert.alert("Apenas professores podem criar/editar posts.");
             return;
         }
         if (!titulo || !descricao || !autor) {
-            alert("Preencha todos os campos obrigatórios.");
+            Alert.alert("Preencha todos os campos obrigatórios.");
             return;
         }
 
