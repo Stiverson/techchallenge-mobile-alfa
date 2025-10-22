@@ -9,6 +9,9 @@ import LoginScreen from '../screens/Auth/LoginScreen';
 import { PostDetailsScreen } from '../screens/Posts/PostDetailsScreen';
 import { PostFormScreen } from '../screens/Posts/PostFormScreen';
 import TabNavigator from './TabNavigator';
+// 💡 Importa o AppHeader para usá-lo como cabeçalho padrão
+import { AppHeader } from '../components/common/AppHeader';
+
 
 const AuthStack = createNativeStackNavigator();
 const AppStack = createNativeStackNavigator();
@@ -28,41 +31,51 @@ const AuthStackScreen = () => (
 );
 
 const AppStackScreen = () => (
-    <AppStack.Navigator>
-      <AppStack.Screen name="MainTabs" component={TabNavigator} options={{ headerShown: false }} /> 
-      
-      <AppStack.Screen 
-        name="PostDetails" 
-        component={PostDetailsScreen} 
-        options={{ title: 'Detalhes do Comunicado' }} 
-      />
-      
-      <AppStack.Screen 
-        name="PostForm" 
-        component={PostFormScreen} 
-        options={({ route }) => ({ 
-          // @ts-ignore
-          title: route.params?.post ? 'Editar Comunicação' : 'Nova Comunicação',
-          headerStyle: { backgroundColor: '#062E4B' },
-          headerTintColor: '#fff',
-        })} 
-      />
+    <AppStack.Navigator
+        screenOptions={{
+            // 💡 CORREÇÃO 1: Define o AppHeader como o cabeçalho padrão para toda a Stack
+            header: AppHeader, 
+        }}
+    >
+        {/* 💡 CORREÇÃO 2: Remove headerShown: false para que o AppHeader seja exibido */}
+        <AppStack.Screen name="MainTabs" component={TabNavigator} /> 
+        
+        {/* Rotas de Posts */}
+        <AppStack.Screen 
+            name="PostDetails" 
+            component={PostDetailsScreen} 
+            options={{ title: 'Detalhes do Comunicado' }} 
+        />
+        
+        <AppStack.Screen 
+            name="PostForm" 
+            component={PostFormScreen} 
+            options={({ route }) => ({ 
+              // @ts-ignore
+              title: route.params?.post ? 'Editar Comunicação' : 'Nova Comunicação',
+              headerStyle: { backgroundColor: '#062E4B' },
+              headerTintColor: '#fff',
+              header: undefined, // 💡 Usa o header nativo para o formulário (melhor experiência)
+            })} 
+        />
 
-      <AppStack.Screen name="UserList" component={UserListScreen} options={({ route }) => ({
-        // @ts-ignore
-        title: `Gerenciar ${route.params?.type === 'professor' ? 'Professores' : 'Alunos'}`
-    })} />
-
-    <AppStack.Screen 
-        name="UserForm" 
-        component={UserFormScreen} 
-        options={({ route }) => ({
+        {/* Rotas de Usuários */}
+        <AppStack.Screen name="UserList" component={UserListScreen} options={({ route }) => ({
             // @ts-ignore
-            title: route.params?.user ? `Editar ${route.params?.user.role.toUpperCase()}` : `Novo ${route.params?.role.toUpperCase()}`,
-            headerStyle: { backgroundColor: '#062E4B' },
-            headerTintColor: '#fff',
-        })} 
-    />
+            title: `Gerenciar ${route.params?.type === 'professor' ? 'Professores' : 'Alunos'}`
+        })} />
+
+        <AppStack.Screen 
+            name="UserForm" 
+            component={UserFormScreen} 
+            options={({ route }) => ({
+                // @ts-ignore
+                title: route.params?.user ? `Editar ${route.params?.user.role.toUpperCase()}` : `Novo ${route.params?.role.toUpperCase()}`,
+                headerStyle: { backgroundColor: '#062E4B' },
+                headerTintColor: '#fff',
+                header: undefined, // 💡 Usa o header nativo para o formulário de usuário
+            })} 
+        />
     </AppStack.Navigator>
 );
 
