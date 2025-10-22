@@ -16,11 +16,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const loadAuth = async () => {
       try {
         const storedToken = await AsyncStorage.getItem(AUTH_KEY);
-        if (storedToken) {
-          const decoded = jwtDecode(storedToken) as UserData;
-          setToken(storedToken);
-          setUser(decoded);
-        }
       } catch (e) {
         console.error("Failed to load auth:", e);
         await AsyncStorage.removeItem(AUTH_KEY);

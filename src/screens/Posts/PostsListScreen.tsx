@@ -1,104 +1,166 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, type NavigationProp } from '@react-navigation/native';
-import { useQuery } from '@tanstack/react-query';
-import React from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { apiFetchPosts } from '../../api/posts';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { apiDeletePost, apiFetchPosts } from '../../api/posts';
+import { PostCard } from '../../components/common/PostCard';
 import { useAuth } from '../../context/AuthContext';
 import { type Comunicacao } from '../../types/comunicacao';
 
-interface PostItemProps {
-  item: Comunicacao; // 💡 Tipagem correta
-  isProfessor: boolean; // 💡 Tipagem correta
-  navigation: NavigationProp<any>; // 💡 Tipagem correta
-}
 
-const PostItem = ({ item, isProfessor, navigation }: PostItemProps) => {
-
-  const handlePress = () => {
-    navigation.navigate('PostDetails', { id: item.id });
-  };
-
-  return (
-    <TouchableOpacity style={styles.itemContainer} onPress={handlePress}>
-      <View style={styles.textGroup}>
-        <Text style={styles.title}>{item.titulo}</Text>
-        <Text style={styles.author}>Por: {item.autor}</Text>
-        <Text style={styles.date}>Criado em: {new Date(item.dataCriacao).toLocaleDateString()}</Text>
-      </View>
-      {isProfessor && ( 
-        <View style={styles.actions}>
-          <Ionicons name="create-outline" size={24} color="#0E6DB1" style={styles.icon} />
-          <Ionicons name="trash-outline" size={24} color="red" style={styles.icon} />
-        </View>
-      )}
-    </TouchableOpacity>
-  );
+type AppStackParamList = {
+    PostDetails: { id: string };
+    PostForm: { post?: Comunicacao };
+    MainTabs: undefined; 
+    [key: string]: object | undefined; 
 };
 
 export function PostsListScreen() {
-  const navigation = useNavigation();
-  const { user } = useAuth();
-  const isProfessor = user?.role === 'professor';
+    const navigation = useNavigation<NavigationProp<AppStackParamList>>();
+    const queryClient = useQueryClient();
+    const { user, token } = useAuth(); 
+    const isProfessor = user?.role === 'professor';
+    
+    const [searchText, setSearchText] = useState(''); 
 
-  const { data: posts, isLoading, isError, error } = useQuery({
-    queryKey: ['posts'],
-    queryFn: apiFetchPosts,
-  });
+    const { data: posts, isLoading, isError, error } = useQuery({
+      queryKey: ['posts'],
+      queryFn: apiFetchPosts,
+    });
+    
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => apiDeletePost(id, token!),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            Alert.alert("Sucesso", "Post excluído com sucesso!");
+        },
+        onError: (e) => {
+            Alert.alert("Erro", `Não foi possível excluir: ${e.message}`); 
+        }
+    });
 
-  if (isLoading) {
+    const handleDeleteConfirm = (post: Comunicacao) => {
+        Alert.alert(
+            "Confirmar Exclusão",
+            `Deseja realmente excluir o post "${post.titulo}"?`,
+            [
+                { text: "Cancelar", style: "cancel" },
+                { 
+                    text: "Excluir", 
+                    onPress: () => deleteMutation.mutate(post.id),
+                    style: "destructive"
+                },
+            ]
+        );
+    };
+    
+    const handleNavigateToCreate = () => {
+        navigation.navigate('PostForm' as never); 
+    };
+
+    const filteredPosts = posts?.filter(post => 
+        post.titulo.toLowerCase().includes(searchText.toLowerCase()) ||
+        post.autor.toLowerCase().includes(searchText.toLowerCase())
+    ) || [];
+
+
+    if (isLoading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0E6DB1" />
+        </View>
+      );
+    }
+
+    if (isError) {
+      return (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.errorText}>Erro ao carregar posts: {error.message}</Text>
+        </View>
+      );
+    }
+
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0E6DB1" />
+      <View style={styles.container}>
+        
+        <View style={styles.contentHeader}>
+            <Text style={styles.accessLabel}>Acessos</Text>
+            <Text style={styles.mainTitle}>Comunicações</Text>
+        </View>
+
+        <View style={styles.searchAndCreateContainer}>
+            <TextInput
+                style={styles.searchBar}
+                placeholder="Pesquisar..."
+                value={searchText}
+                onChangeText={setSearchText}
+            />
+            
+            {isProfessor && (
+                <TouchableOpacity style={styles.createButton} onPress={handleNavigateToCreate}>
+                    <Ionicons name="add" size={24} color="#fff" />
+                </TouchableOpacity>
+            )}
+        </View>
+        
+        
+            <FlatList
+            data={filteredPosts}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+                <PostCard 
+                    item={item} 
+                    isProfessor={isProfessor} 
+                    onPress={() => navigation.navigate('PostDetails', { id: item.id } as any)} 
+                    onEdit={() => navigation.navigate('PostForm', { post: item } as any)}
+                    onDelete={() => handleDeleteConfirm(item)}
+                />
+            )}
+            contentContainerStyle={styles.listContent}
+        />
       </View>
     );
-  }
-
-  if (isError) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.errorText}>Erro ao carregar posts: {error.message}</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <PostItem item={item} isProfessor={isProfessor} navigation={navigation} />
-        )}
-        contentContainerStyle={styles.listContent}
-      />
-    </View>
-  );
 }
 
 const styles = StyleSheet.create({
- 
-  container: { flex: 1, backgroundColor: '#f0f0f0' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  listContent: { paddingHorizontal: 15, paddingTop: 15 },
-  itemContainer: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  textGroup: { flex: 1 },
-  title: { fontSize: 16, fontWeight: 'bold', color: '#0E6DB1' },
-  author: { fontSize: 14, color: '#555', marginTop: 5 },
-  date: { fontSize: 12, color: '#999', marginTop: 3 },
-  actions: { flexDirection: 'row', gap: 10, marginLeft: 15 },
-  icon: { padding: 5 },
-  errorText: { color: 'red', fontSize: 16 }
+    container: { flex: 1, backgroundColor: '#f0f0f0' },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    
+    // Estilos de Cabeçalho (Figma)
+    contentHeader: { paddingHorizontal: 15, paddingTop: 15 },
+    accessLabel: { fontSize: 12, color: '#0E6DB1', marginBottom: 5, fontWeight: '500' },
+    mainTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 10, color: '#333' },
+    
+    // Estilos da Barra de Busca e Botão
+    searchAndCreateContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 15,
+        marginBottom: 10,
+    },
+    searchBar: {
+        flex: 1,
+        height: 40,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        backgroundColor: '#fff',
+        marginRight: 10,
+        fontSize: 16
+    },
+    createButton: {
+        backgroundColor: '#0E6DB1',
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    
+    // Estilo da lista (Espaçamento do Figma)
+    listContent: { paddingHorizontal: 15, paddingBottom: 30 },
+    errorText: { color: 'red', fontSize: 16, padding: 20 },
+    // Estilos que foram movidos para o PostCard foram removidos daqui
 });

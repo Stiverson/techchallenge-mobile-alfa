@@ -7,6 +7,7 @@ import LoginScreen from '../screens/Auth/LoginScreen';
 import { PostDetailsScreen } from '../screens/Posts/PostDetailsScreen';
 import TabNavigator from './TabNavigator';
 
+
 const AuthStack = createNativeStackNavigator();
 const AppStack = createNativeStackNavigator();
 

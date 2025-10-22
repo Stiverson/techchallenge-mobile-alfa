@@ -4,7 +4,7 @@ import { ActivityIndicator, Image, StyleSheet, Text, TextInput, TouchableOpacity
 import { apiLogin } from '../../api/auth';
 import { useAuth } from '../../context/AuthContext';
 
-const Logo = require('../../assets/images/react-logo.png');
+const Logo = require('../../assets/images/logo.png');
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('professor@alfa.com'); 

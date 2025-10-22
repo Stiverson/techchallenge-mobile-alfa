@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { type Comunicacao, type Post } from '../types/comunicacao';
+import { ComunicacaoForm, type Comunicacao, type Post } from '../types/comunicacao';
 import { API_URL } from './config';
 
 function mapPostToComunicacao(post: Post): Comunicacao {
@@ -24,15 +24,22 @@ export async function apiFetchPosts(): Promise<Comunicacao[]> {
 }
 
 
-// export async function apiCreatePost(data: ComunicacaoForm, token: string): Promise<Comunicacao> {
-//   const response = await axios.post<Post>(`${API_URL}/posts`, data, {
-//     headers: { Authorization: `Bearer ${token}` }
-//   });
-//   return mapPostToComunicacao(response.data);
-// }
+export async function apiCreatePost(data: ComunicacaoForm, token: string): Promise<Comunicacao> {
+  const response = await axios.post<Post>(`${API_URL}/posts`, data, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return mapPostToComunicacao(response.data);
+}
 
-// export async function apiDeletePost(id: string, token: string): Promise<void> {
-//   await axios.delete(`${API_URL}/posts/${id}`, {
-//     headers: { Authorization: `Bearer ${token}` }
-//   });
-// }
+export async function apiUpdatePost(id: string, data: ComunicacaoForm, token: string): Promise<Comunicacao> {
+  const response = await axios.put<Post>(`${API_URL}/posts/${id}`, data, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return mapPostToComunicacao(response.data);
+}
+
+export async function apiDeletePost(id: string, token: string): Promise<void> {
+  await axios.delete(`${API_URL}/posts/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
