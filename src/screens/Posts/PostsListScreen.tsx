@@ -56,8 +56,8 @@ export function PostsListScreen() {
     };
     
     const handleNavigateToCreate = () => {
-        navigation.navigate('PostForm' as never); 
-    };
+   navigation.navigate('PostForm', {});
+};
 
     const filteredPosts = posts?.filter(post => 
         post.titulo.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -112,8 +112,8 @@ export function PostsListScreen() {
                 <PostCard 
                     item={item} 
                     isProfessor={isProfessor} 
-                    onPress={() => navigation.navigate('PostDetails', { id: item.id } as any)} 
-                    onEdit={() => navigation.navigate('PostForm', { post: item } as any)}
+                    onPress={() => navigation.navigate('PostDetails', { id: item.id })} 
+                    onEdit={() => navigation.navigate('PostForm', { post: item })}
                     onDelete={() => handleDeleteConfirm(item)}
                 />
             )}

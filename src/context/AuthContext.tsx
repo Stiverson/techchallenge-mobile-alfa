@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const loadAuth = async () => {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const storedToken = await AsyncStorage.getItem(AUTH_KEY);
       } catch (e) {
         console.error("Failed to load auth:", e);

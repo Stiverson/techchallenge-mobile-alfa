@@ -15,28 +15,28 @@ export function PostFormScreen() {
     const navigation = useNavigation();
     const queryClient = useQueryClient();
     
-    
     const { token, user } = useAuth();
     
     // @ts-ignore
     const { post } = (route.params || {}) as RouteParams;
     const isEditing = !!post;
 
-    
-    const [titulo, setTitulo] = useState(post?.titulo || '');
-    const [descricao, setDescricao] = useState(post?.descricao || '');
 
+    const [titulo, setTitulo] = useState(post?.titulo || '');
+    const [descricao, setDescricao] = useState(post?.descricao || ''); 
+
+    
     const [autor, setAutor] = useState(post?.autor || (user?.email || 'Professor Logado')); 
 
     const isProfessor = user?.role === 'professor';
     
     
+
     const createMutation = useMutation({
         mutationFn: (data: ComunicacaoForm) => apiCreatePost(data, token!),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['posts'] });
             navigation.goBack();
-            alert(`Comunicação criada com sucesso!`);
         },
         onError: (error) => {
             alert(`Erro ao criar: ${error.message}`);
@@ -49,7 +49,6 @@ export function PostFormScreen() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['posts'] });
             navigation.goBack();
-            alert(`Comunicação editada com sucesso!`);
         },
         onError: (error) => {
             alert(`Erro ao editar: ${error.message}`);
@@ -69,7 +68,12 @@ export function PostFormScreen() {
             return;
         }
 
-        const formData: ComunicacaoForm = { titulo, descricao, autor, tipo: "Comunicado" }; 
+        const formData: any = { 
+            title: titulo,       
+            content: descricao,  
+            author: autor,       
+            tipo: "Comunicado"   
+        }; 
 
         if (isEditing && post) {
             updateMutation.mutate({ id: post.id, data: formData });
@@ -103,7 +107,7 @@ export function PostFormScreen() {
             />
 
             <Text style={styles.label}>Autor</Text>
-            <TextInput style={styles.input} value={autor} onChangeText={setAutor} editable={!isEditing && !isPending} />
+            <TextInput style={styles.input} value={autor} onChangeText={setAutor} editable={false} /> 
 
             <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={isPending}>
                 {isPending ? (
