@@ -36,7 +36,7 @@ export default function LoginScreen() {
                 <Image source={Logo} style={styles.logo} />
                 <Text style={styles.title}>Centro Educacional Alfa</Text>
 
-                {/* Campo Email */}
+             
                 <View style={styles.inputContainer}>
                     <Feather name="mail" size={20} color="#666" style={styles.icon} />
                     <TextInput
@@ -48,8 +48,6 @@ export default function LoginScreen() {
                         onChangeText={setEmail}
                     />
                 </View>
-
-                {/* Campo Senha */}
                 <View style={styles.inputContainer}>
                     <Feather name="lock" size={20} color="#666" style={styles.icon} />
                     <TextInput
@@ -61,7 +59,6 @@ export default function LoginScreen() {
                     />
                 </View>
                 
-                {/* Botão de Login */}
                 <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
                     {loading ? (
                         <ActivityIndicator color="#fff" />

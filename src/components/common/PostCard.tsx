@@ -12,16 +12,16 @@ interface PostCardProps {
 }
 
 export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostCardProps) {
-    // 💡 Estado para controlar a visibilidade do menu Admin (Três Pontos)
+  
     const [isMenuVisible, setIsMenuVisible] = React.useState(false);
 
-    // Função de utilidade para o texto de descrição (Figma mostra o início do conteúdo)
+    
     const shortDescription = item.descricao.length > 100 
         ? item.descricao.substring(0, 100) + '...'
         : item.descricao;
 
     const handleMenuToggle = () => {
-        // Apenas professor pode abrir o menu
+       
         if (isProfessor) {
             setIsMenuVisible(!isMenuVisible);
         }
@@ -39,28 +39,28 @@ export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostC
 
     return (
         <View style={styles.cardWrapper}>
-            {/* Topo do Card: Título, Autor e Botões de Ação */}
+           
             <View style={styles.topRow}>
                 <TouchableOpacity onPress={onPress} style={styles.titleContainer}>
                     <Text style={styles.title} numberOfLines={1}>{item.titulo}</Text>
                     <View style={styles.authorContainer}>
                         <Text style={styles.author}>{item.autor}</Text>
-                        {/* Ícone Chevron Up para indicar que é expansível */}
+                        
                         <Feather name="chevron-up" size={16} color="#666" style={styles.chevronIcon} /> 
                     </View>
                 </TouchableOpacity>
 
-                {/* Ícone de Ações Detalhadas (Três Pontos) */}
+             
                 {isProfessor ? (
                     <TouchableOpacity onPress={handleMenuToggle} style={styles.menuButton}>
                         <Ionicons name="ellipsis-vertical" size={24} color="#333" />
                     </TouchableOpacity>
                 ) : (
-                    <View style={styles.menuButtonPlaceholder} /> // Placeholder para alinhar
+                    <View style={styles.menuButtonPlaceholder} /> 
                 )}
             </View>
 
-            {/* Menu Dropdown de Edição/Deleção (Visível apenas se isMenuVisible for true) */}
+            
             {isMenuVisible && isProfessor && (
                 <View style={styles.adminMenu}>
                     <TouchableOpacity onPress={handleEditAction} style={styles.adminMenuItem}>
@@ -72,13 +72,13 @@ export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostC
                 </View>
             )}
 
-            {/* Conteúdo Principal (Descrição e Metadados) */}
+          
             <View style={styles.contentArea}>
                 <Text style={styles.descriptionText} numberOfLines={2}>
                     {shortDescription}
                 </Text>
 
-                {/* Metadados: Data/Tipo */}
+              
                 <View style={styles.metadataRow}>
                     <View style={styles.metadataItem}>
                         <Text style={styles.metadataLabel}>🗓️ Data criação</Text>
@@ -99,29 +99,29 @@ export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostC
 }
 
 const styles = StyleSheet.create({
-    // 💡 CARD WRAPPER (Frame 629845 no Figma)
+    
     cardWrapper: {
         backgroundColor: '#fff',
-        borderRadius: 16, // Medida do Figma
-        padding: 16, // Medida do Figma
+        borderRadius: 16, 
+        padding: 16, 
         marginBottom: 16,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 5,
-        overflow: 'visible', // Permite que o menu flutuante seja exibido
+        overflow: 'visible', 
     },
 
-    // 💡 TOP ROW (Contêiner do título, autor e botão de menu)
+  
     topRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start', // Alinha o menu no topo
+        alignItems: 'flex-start', 
         marginBottom: 10,
     },
     titleContainer: {
-        flex: 1, // Ocupa o espaço restante
+        flex: 1, 
     },
     title: {
         fontSize: 16,
@@ -142,25 +142,25 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
 
-    // 💡 MENU DE 3 PONTOS E ADMIN (Flutuante)
+    
     menuButton: {
         padding: 5,
         marginLeft: 10,
     },
     menuButtonPlaceholder: {
         width: 34,
-        height: 34, // Espaçamento para o placeholder
+        height: 34, 
         marginLeft: 10,
     },
     adminMenu: {
         position: 'absolute',
-        top: 40, // Abaixo do botão de 3 pontos
+        top: 40, 
         right: 0,
         backgroundColor: '#fff',
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#ddd',
-        zIndex: 100, // Garante que fique por cima de outros elementos
+        zIndex: 100, 
         minWidth: 150,
         paddingVertical: 5,
     },
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
     },
     metadataItem: {
-        minWidth: '45%', // Garante que caibam dois por linha
+        minWidth: '45%',
         marginBottom: 8,
     },
     metadataLabel: {
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: 'bold',
         color: '#0E6DB1',
-        backgroundColor: '#E6F4FE', // Cor de fundo da tag
+        backgroundColor: '#E6F4FE',
         paddingHorizontal: 8,
         paddingVertical: 3,
         borderRadius: 12,

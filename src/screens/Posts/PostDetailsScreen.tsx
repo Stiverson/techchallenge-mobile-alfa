@@ -5,7 +5,6 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { apiFetchPosts } from '../../api/posts';
 
 export function PostDetailsScreen() {
-  // Obtém os parâmetros (id) da rota
   const route = useRoute();
   // @ts-ignore
   const { id } = route.params;

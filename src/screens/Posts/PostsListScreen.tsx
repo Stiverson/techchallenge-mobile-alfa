@@ -127,12 +127,11 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f0f0f0' },
     loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     
-    // Estilos de Cabeçalho (Figma)
     contentHeader: { paddingHorizontal: 15, paddingTop: 15 },
     accessLabel: { fontSize: 12, color: '#0E6DB1', marginBottom: 5, fontWeight: '500' },
     mainTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 10, color: '#333' },
     
-    // Estilos da Barra de Busca e Botão
+    
     searchAndCreateContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -159,8 +158,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     
-    // Estilo da lista (Espaçamento do Figma)
+    
     listContent: { paddingHorizontal: 15, paddingBottom: 30 },
     errorText: { color: 'red', fontSize: 16, padding: 20 },
-    // Estilos que foram movidos para o PostCard foram removidos daqui
 });

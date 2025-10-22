@@ -32,7 +32,6 @@ export function AppHeader() {
                 </View>
                 <Text style={styles.username}>{displayName}</Text>
 
-                {/* Botão de Logout */}
                 <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
                     <Feather name="log-out" size={20} color="#fff" />
                 </TouchableOpacity>
