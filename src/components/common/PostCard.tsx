@@ -13,9 +13,8 @@ interface PostCardProps {
 
 export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostCardProps) {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(true); // Mantemos TRUE para o visual do Figma (aberto)
+    const [isExpanded, setIsExpanded] = useState(true); 
     
-    // Funções de Ação
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const shortDescription = item.descricao.length > 100 
         ? item.descricao.substring(0, 100) + '...'
@@ -47,19 +46,13 @@ export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostC
         <View style={styles.cardWrapper}>
             
             <View style={styles.topRow}>
-                {/* 💡 Ação de Expansão no Título/Autor */}
                 <TouchableOpacity onPress={handleExpandToggle} style={styles.titleContainer}>
-                    {/* Título Principal */}
                     <Text style={styles.title} numberOfLines={1}>{item.titulo}</Text>
-                    
-                    {/* Linha do Autor e o Chevron */}
                     <View style={styles.authorContainer}>
                         <Text style={styles.author}>{item.autor}</Text>
                         <Feather name={isExpanded ? "chevron-up" : "chevron-down"} size={16} color="#666" style={styles.chevronIcon} /> 
                     </View>
                 </TouchableOpacity>
-
-                {/* Ícone de Ações Detalhadas (Três Pontos) */}
                 {isProfessor ? (
                     <TouchableOpacity onPress={handleMenuToggle} style={styles.menuButton}>
                         <Ionicons name="ellipsis-vertical" size={24} color="#333" />
@@ -68,8 +61,6 @@ export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostC
                     <View style={styles.menuButtonPlaceholder} /> 
                 )}
             </View>
-
-            {/* Menu Dropdown de Edição/Deleção (Condicional) */}
             {isMenuVisible && isProfessor && (
                 <View style={styles.adminMenu}>
                     <TouchableOpacity onPress={handleEditAction} style={styles.adminMenuItem}>
@@ -80,27 +71,23 @@ export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostC
                     </TouchableOpacity>
                 </View>
             )}
-
-            {/* 💡 CONTEÚDO EXPANDIDO (Descrição e Metadados) */}
             <View style={styles.contentArea}>
                 <Text style={styles.descriptionText} numberOfLines={isExpanded ? 0 : 2}>
                     {item.descricao}
                 </Text>
-
-                {/* 💡 METADADOS: Em duas colunas por linha (Figma) */}
                 {isExpanded && (
                     <View style={styles.metadataGrid}>
-                        {/* Data Criação */}
+                     
                         <View style={styles.metadataItemGrid}>
                             <Text style={styles.metadataLabel}>🗓️ Data criação</Text>
                             <Text style={styles.metadataValue}>{new Date(item.dataCriacao).toLocaleDateString()}</Text>
                         </View>
-                        {/* Data Atualização */}
+                      
                         <View style={styles.metadataItemGrid}>
                             <Text style={styles.metadataLabel}>🗓️ Data atualização</Text>
                             <Text style={styles.metadataValue}>{new Date(item.dataAtualizacao).toLocaleDateString()}</Text>
                         </View>
-                        {/* Tipo */}
+                      
                         <View style={styles.metadataItemGrid}>
                             <Text style={styles.metadataLabel}>Tipo</Text>
                             <Text style={styles.typeTag}>{item.tipo}</Text>
@@ -111,8 +98,6 @@ export function PostCard({ item, isProfessor, onPress, onEdit, onDelete }: PostC
         </View>
     );
 }
-// ... (Estilos)
-
 const styles = StyleSheet.create({
     cardWrapper: {
         backgroundColor: '#fff',

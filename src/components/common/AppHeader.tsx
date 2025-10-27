@@ -23,19 +23,16 @@ export function AppHeader() {
     return (
   <View style={styles.header}>
             <View style={styles.logoContainer}>
-                {/* 💡 Exibe o novo logo sozinho */}
                 <Image source={Logo} style={styles.logo} /> 
             </View>
 
             <View style={styles.userContainer}>
-                {/* 💡 Avatar e Nome do Usuário */}
                 <View style={styles.avatar}>
                     <Text style={styles.avatarText}>{initials}</Text>
                 </View>
                 <Text style={styles.username} numberOfLines={1} ellipsizeMode="tail">
                     {displayName}
                 </Text>
-                {/* Ícone de Logout */}
                 <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
                     <Feather name="log-out" size={20} color="#fff" />
                 </TouchableOpacity>

@@ -114,7 +114,7 @@ export function UserListScreen() {
     );
 }
 
-// ... (Estilos)
+
 const styles = StyleSheet.create({
     container: { flex: 1, padding: 20, backgroundColor: '#f0f0f0' },
     title: { fontSize: 22, fontWeight: 'bold', marginBottom: 15, color: '#062E4B' },
@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
     errorText: { color: 'red', textAlign: 'center', padding: 20 },
     accessDeniedText: { color: '#D32F2F', textAlign: 'center', padding: 50, fontSize: 18 },
     list: { marginTop: 10 },
-    // Estilos do Item
     userItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',

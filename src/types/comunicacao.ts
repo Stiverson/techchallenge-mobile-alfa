@@ -22,5 +22,5 @@ export interface ComunicacaoForm {
   titulo: string;
   descricao: string;
   autor: string;
-  tipo: string;
+  tipo: 'Comunicado' | 'Aviso' | 'Outros';
 }

@@ -2,6 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
+import { AppHeader } from '../components/common/AppHeader';
 import { useAuth } from '../context/AuthContext';
 import { UserFormScreen } from '../screens/Admin/UserFormScreen';
 import { UserListScreen } from '../screens/Admin/UserListScreen';
@@ -9,8 +10,6 @@ import LoginScreen from '../screens/Auth/LoginScreen';
 import { PostDetailsScreen } from '../screens/Posts/PostDetailsScreen';
 import { PostFormScreen } from '../screens/Posts/PostFormScreen';
 import TabNavigator from './TabNavigator';
-// 💡 Importa o AppHeader para usá-lo como cabeçalho padrão
-import { AppHeader } from '../components/common/AppHeader';
 
 
 const AuthStack = createNativeStackNavigator();
@@ -33,14 +32,13 @@ const AuthStackScreen = () => (
 const AppStackScreen = () => (
     <AppStack.Navigator
         screenOptions={{
-            // 💡 CORREÇÃO 1: Define o AppHeader como o cabeçalho padrão para toda a Stack
             header: AppHeader, 
         }}
     >
-        {/* 💡 CORREÇÃO 2: Remove headerShown: false para que o AppHeader seja exibido */}
+       
         <AppStack.Screen name="MainTabs" component={TabNavigator} /> 
         
-        {/* Rotas de Posts */}
+      
         <AppStack.Screen 
             name="PostDetails" 
             component={PostDetailsScreen} 
@@ -55,11 +53,10 @@ const AppStackScreen = () => (
               title: route.params?.post ? 'Editar Comunicação' : 'Nova Comunicação',
               headerStyle: { backgroundColor: '#062E4B' },
               headerTintColor: '#fff',
-              header: undefined, // 💡 Usa o header nativo para o formulário (melhor experiência)
+              header: undefined, 
             })} 
         />
 
-        {/* Rotas de Usuários */}
         <AppStack.Screen name="UserList" component={UserListScreen} options={({ route }) => ({
             // @ts-ignore
             title: `Gerenciar ${route.params?.type === 'professor' ? 'Professores' : 'Alunos'}`
@@ -73,7 +70,7 @@ const AppStackScreen = () => (
                 title: route.params?.user ? `Editar ${route.params?.user.role.toUpperCase()}` : `Novo ${route.params?.role.toUpperCase()}`,
                 headerStyle: { backgroundColor: '#062E4B' },
                 headerTintColor: '#fff',
-                header: undefined, // 💡 Usa o header nativo para o formulário de usuário
+                header: undefined,
             })} 
         />
     </AppStack.Navigator>

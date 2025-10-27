@@ -6,7 +6,6 @@ import { useAuth } from '../../context/AuthContext';
 
 const Logo = require('../../assets/images/logo.png');
 
-// 💡 Componente de Checkbox (simples)
 interface CheckBoxProps {
     checked: boolean;
     onChange: (checked: boolean) => void;
@@ -24,7 +23,7 @@ const CheckBox = ({ checked, onChange, label }: CheckBoxProps) => (
 
 
 export default function LoginScreen() {
-    // Mantemos as credenciais de teste
+   
     const [email, setEmail] = useState('professor@alfa.com'); 
     const [password, setPassword] = useState('senha123'); 
     const [rememberMe, setRememberMe] = useState(false);
@@ -55,12 +54,12 @@ export default function LoginScreen() {
                 <Image source={Logo} style={styles.logo} />
                 <Text style={styles.title}>Centro Educacional Alfa</Text>
 
-                {/* 💡 Label "Username" (Figma) */}
+               
                 <Text style={styles.label}>Username</Text> 
                 
-                {/* Campo Email */}
+               
                 <View style={styles.inputContainer}>
-                    <Feather name="user" size={20} color="#666" style={styles.icon} /> {/* 💡 ÍCONE CORRIGIDO */}
+                    <Feather name="user" size={20} color="#666" style={styles.icon} /> 
                     <TextInput
                         style={styles.input}
                         placeholder="professor@alfa.com"
@@ -73,7 +72,7 @@ export default function LoginScreen() {
                 
                 <Text style={styles.label}>Senha</Text> 
                 
-                {/* Campo Senha */}
+                
                 <View style={styles.inputContainer}>
                     <Feather name="lock" size={20} color="#666" style={styles.icon} />
                     <TextInput
@@ -85,7 +84,7 @@ export default function LoginScreen() {
                     />
                 </View>
 
-                {/* 💡 Checkbox e Link Esqueci Senha (Layout Figma) */}
+                
                 <View style={styles.optionsRow}>
                     <CheckBox checked={rememberMe} onChange={setRememberMe} label="Lembre de mim" />
                     <TouchableOpacity onPress={() => Alert.alert('Recuperação', 'Entre em contato com a administração.')}>
@@ -93,7 +92,7 @@ export default function LoginScreen() {
                     </TouchableOpacity>
                 </View>
                 
-                {/* Botão de Login */}
+            
                 <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
                     {loading ? (
                         <ActivityIndicator color="#fff" />
@@ -116,16 +115,16 @@ const styles = StyleSheet.create({
     logo: { width: 100, height: 100, marginBottom: 20 },
     title: { fontSize: 20, fontWeight: 'bold', color: '#0E6DB1', marginBottom: 30 },
     
-    // 💡 Estilos para Labels (Username/Senha)
+    
     label: { alignSelf: 'flex-start', marginLeft: 5, fontSize: 14, fontWeight: 'bold', color: '#333', marginBottom: 5 },
     
-    // 💡 Estilo para a linha de opções (Lembre-me e Link)
+    
     optionsRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
         marginTop: 5,
-        marginBottom: 20, // Espaçamento antes do botão
+        marginBottom: 20, 
     },
 
     inputContainer: {
@@ -135,7 +134,7 @@ const styles = StyleSheet.create({
     icon: { marginRight: 10 },
     input: { flex: 1, height: '100%' },
     
-    // 💡 Estilos do Checkbox
+   
     checkboxContainer: { flexDirection: 'row', alignItems: 'center' },
     checkbox: {
         width: 18, height: 18, borderRadius: 4, borderWidth: 1, borderColor: '#0E6DB1', 
