@@ -7,7 +7,7 @@ function mapPostToComunicacao(post: Post): Comunicacao {
     id: post._id,
     titulo: post.title,
     autor: post.author,
-    tipo: "Comunicado",
+    tipo: post.tipo,
     descricao: post.content,
     dataCriacao: new Date(post.createdAt),
     dataAtualizacao: new Date(post.createdAt),

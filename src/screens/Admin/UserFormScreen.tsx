@@ -4,6 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import { apiCreateUser, apiUpdateUser } from '../../api/users';
 import { useAuth } from '../../context/AuthContext';
+import { type Role, type UserListItem } from '../../types/auth';
+
+interface RouteParams {
+    role?: Role; 
+    user?: UserListItem; 
+}
 
 
 export function UserFormScreen() {
@@ -11,7 +17,7 @@ export function UserFormScreen() {
     const navigation = useNavigation();
     const queryClient = useQueryClient();
 
-    
+
     const { token, user } = useAuth();
     
     // @ts-ignore
@@ -19,13 +25,12 @@ export function UserFormScreen() {
     
     const isEditing = !!routeUser;
     const role = routeUser?.role || routeRole || 'aluno'; 
+    const isProfessor = user?.role === 'professor';
 
 
     const [email, setEmail] = useState(routeUser?.email || '');
     const [password, setPassword] = useState('');
     
-    const isProfessor = user?.role === 'professor';
-
     const createUserMutation = useMutation({
         mutationFn: (data: any) => apiCreateUser(role, data, token!),
         onSuccess: () => {
@@ -37,7 +42,6 @@ export function UserFormScreen() {
             Alert.alert("Erro", `Falha ao salvar usuário: ${error.message}`);
         }
     });
-
 
     const updateMutation = useMutation({
         mutationFn: ({ id, data }: { id: string, data: any }) => apiUpdateUser(role, id, data, token!),
@@ -53,26 +57,14 @@ export function UserFormScreen() {
 
     const isPending = createUserMutation.isPending || updateMutation.isPending;
 
-  
+    
     const handleSubmit = () => {
-        if (!email) {
-            Alert.alert("Erro", "O e-mail é obrigatório.");
-            return;
-        }
+        if (!email) { Alert.alert("Erro", "O e-mail é obrigatório."); return; }
+        if (!isEditing && !password) { Alert.alert("Erro", "A senha é obrigatória para novos cadastros."); return; }
 
-        
-        if (!isEditing && !password) {
-            Alert.alert("Erro", "A senha é obrigatória para novos cadastros.");
-            return;
-        }
-
-        
         let formData: any = { email }; 
-        if (password) {
-            formData.password = password; 
-        }
-
-        formData.role = role;
+        if (password) { formData.password = password; }
+        formData.role = role; 
 
         if (isEditing && routeUser) {
             updateMutation.mutate({ id: routeUser.id, data: formData });
@@ -81,7 +73,7 @@ export function UserFormScreen() {
         }
     };
 
- 
+    
     useEffect(() => {
         navigation.setOptions({
             title: isEditing ? `Editar ${role.toUpperCase()}` : `Novo ${role.toUpperCase()}`,
@@ -99,7 +91,7 @@ export function UserFormScreen() {
                 value={email} 
                 onChangeText={setEmail} 
                 keyboardType="email-address"
-                editable={!isPending}
+                editable={!isEditing && !isPending} 
             />
 
             <Text style={styles.label}>Senha {isEditing ? "(Opcional)" : "(Obrigatória)"}</Text>

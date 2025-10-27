@@ -3,6 +3,7 @@ export interface Post {
   title: string;
   content: string;
   author: string;
+  tipo: string;
   createdAt: string;
   __v?: number;
 }

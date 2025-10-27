@@ -17,3 +17,8 @@ export interface AuthContextType {
   login: (token: string) => void;
   logout: () => void;
 }
+
+export type Role = 'professor' | 'aluno'; 
+
+
+export type UserListItem = { id: string; email: string; role: Role };

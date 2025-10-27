@@ -1,10 +1,11 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
+// 💡 REMOVEMOS A IMPORTAÇÃO DO PICKER
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { apiCreatePost, apiUpdatePost } from '../../api/posts';
+import { TypeSelectModal } from '../../components/common/TypeSelectModal'; // 👈 NOVO MODAL
 import { useAuth } from '../../context/AuthContext';
 import { type Comunicacao, type ComunicacaoForm } from '../../types/comunicacao';
 
@@ -12,27 +13,12 @@ interface RouteParams {
     post?: Comunicacao; 
 }
 
-
 const TIPOS_COMUNICACAO = [
     { label: "Comunicado", value: "Comunicado" },
     { label: "Aviso", value: "Aviso" },
     { label: "Outros", value: "Outros" }
 ];
 
-const TypeDropdown = ({ selectedValue, onValueChange, enabled }: { selectedValue: string, onValueChange: (v: string) => void, enabled: boolean }) => (
-    <View style={styles.dropdownContainer}> 
-        <Picker
-            selectedValue={selectedValue}
-            onValueChange={onValueChange}
-            style={styles.pickerStyle}
-            enabled={enabled}
-        >
-            {TIPOS_COMUNICACAO.map((t, index) => (
-                <Picker.Item key={index} label={t.label} value={t.value} />
-            ))}
-        </Picker>
-    </View>
-);
 
 export function PostFormScreen() {
     const route = useRoute();
@@ -45,15 +31,16 @@ export function PostFormScreen() {
     const { post } = (route.params || {}) as RouteParams;
     const isEditing = !!post;
 
+    // 💡 Estado de visibilidade do modal de seleção
+    const [isTypeModalVisible, setIsTypeModalVisible] = useState(false); 
+
     // Estados
     const [titulo, setTitulo] = useState(post?.titulo || '');
     const [descricao, setDescricao] = useState(post?.descricao || ''); 
     const [autor, setAutor] = useState(post?.autor || (user?.email || 'Professor Logado')); 
-    // 💡 Estado para o Tipo
-    const [tipo, setTipo] = useState(post?.tipo || 'Comunicado'); 
+    const [tipo, setTipo] = useState(post?.tipo || 'Comunicado'); // <-- Valor Inicial Válido
 
     const isProfessor = user?.role === 'professor';
-    
     
     // Mutações (Mantido)
     const createMutation = useMutation({
@@ -72,22 +59,17 @@ export function PostFormScreen() {
 
     
     const handleSubmit = () => {
-        if (!isProfessor) {
-            Alert.alert("Erro", "Apenas professores podem criar/editar posts.");
+        if (!isProfessor) { Alert.alert("Erro", "Apenas professores podem criar/editar posts."); return; }
+        
+        // 💡 VALIDAÇÃO: Se o tipo for 'Comunicado' (o valor inicial), garante que não seja o valor 'Comunicado' de fallback.
+        if (!titulo || !descricao || !autor || !tipo) { 
+            Alert.alert("Erro", "Preencha todos os campos obrigatórios.");
             return;
         }
-        
-      if (!titulo || !descricao || !autor) { 
-    Alert.alert("Erro", "Preencha todos os campos obrigatórios.");
-    return;
-}
 
         const formData: any = { 
-            title: titulo, 
-            content: descricao, 
-            author: autor, 
-            tipo: tipo 
-        }; 
+            title: titulo, content: descricao, author: autor, tipo: tipo 
+        };
 
         if (isEditing && post) {
             updateMutation.mutate({ id: post.id, data: formData });
@@ -109,7 +91,6 @@ export function PostFormScreen() {
         <View style={styles.fullScreenContainer}>
             <ScrollView style={styles.scrollViewContent}>
                 
-                {/* 💡 CAMPOS DE FORMULÁRIO */}
                 <Text style={styles.label}>Título*</Text>
                 <TextInput style={styles.input} value={titulo} onChangeText={setTitulo} editable={!isPending} placeholder="Digite o título" />
 
@@ -127,15 +108,35 @@ export function PostFormScreen() {
                 <Text style={styles.label}>Autor*</Text>
                 <TextInput style={styles.input} value={autor} onChangeText={setAutor} editable={false} placeholder="Digite o autor" /> 
 
-                {/* 💡 CAMPO TIPO (Picker Funcional) */}
+                {/* 💡 CAMPO TIPO: Agora é um Touchable que abre o Modal */}
                 <Text style={styles.label}>Tipo*</Text>
-                <TypeDropdown selectedValue={tipo} onValueChange={setTipo} enabled={!isPending} />
+                <TouchableOpacity style={styles.dropdownContainer} onPress={() => setIsTypeModalVisible(true)} disabled={isPending}>
+                    <Text style={styles.dropdownText}>{tipo}</Text>
+                    <Feather name="chevron-down" size={20} color="#666" style={{ marginRight: 5 }} />
+                </TouchableOpacity>
+                
+                {/* 💡 RENDERIZAÇÃO DO MODAL DE SELEÇÃO */}
+                <TypeSelectModal
+                    isVisible={isTypeModalVisible}
+                    options={TIPOS_COMUNICACAO}
+                    selectedValue={tipo}
+                    onSelect={setTipo} // 💡 O estado 'tipo' será atualizado
+                    onClose={() => setIsTypeModalVisible(false)}
+                />
                 
             </ScrollView>
 
+            {/* 💡 RENDERIZAÇÃO DO MODAL DE SELEÇÃO */}
+            <TypeSelectModal
+                isVisible={isTypeModalVisible}
+                options={TIPOS_COMUNICACAO}
+                selectedValue={tipo}
+                onSelect={setTipo} // 💡 O estado 'tipo' será atualizado
+                onClose={() => setIsTypeModalVisible(false)}
+            />
+
             {/* 💡 FOOTER COM BOTÕES (Layout Figma) */}
             <View style={styles.footer}>
-                {/* Botão Fechar */}
                 <TouchableOpacity 
                     style={styles.footerButtonClose} 
                     onPress={() => navigation.goBack()}
@@ -145,7 +146,6 @@ export function PostFormScreen() {
                     <Text style={styles.footerButtonTextClose}>Fechar</Text>
                 </TouchableOpacity>
 
-                {/* Botão Adicionar/Salvar */}
                 <TouchableOpacity 
                     style={styles.footerButtonSubmit} 
                     onPress={handleSubmit} 
@@ -166,88 +166,33 @@ export function PostFormScreen() {
 }
 
 const styles = StyleSheet.create({
-    fullScreenContainer: {
-        flex: 1,
-        backgroundColor: '#f0f0f0',
-    },
-    scrollViewContent: {
-        flex: 1, 
-        paddingHorizontal: 20, 
-        paddingTop: 10
-    },
+    fullScreenContainer: { flex: 1, backgroundColor: '#f0f0f0' },
+    scrollViewContent: { flex: 1, paddingHorizontal: 20, paddingTop: 10 },
     label: { fontSize: 16, fontWeight: 'bold', marginTop: 15, marginBottom: 5, color: '#333' },
-    input: {
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 10,
-        fontSize: 16,
-    },
-    textArea: {
-        height: 100,
-        textAlignVertical: 'top',
-    },
+    input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, fontSize: 16, marginBottom: 15, },
+    textArea: { height: 100, textAlignVertical: 'top' },
     
-    // 💡 Estilos do Dropdown (Simulação do campo Tipo)
+    // 💡 Estilos do Dropdown (Substituindo o Picker)
     dropdownContainer: {
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        height: 50,
-        paddingHorizontal: 5,
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 15,
-        overflow: 'hidden',
+        backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
+        height: 50, paddingHorizontal: 10, marginBottom: 15,
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     },
-    pickerStyle: {
-        flex: 1,
-        height: '100%',
-        paddingVertical: 0,
-    },
-    dropdownIcon: {
-        position: 'absolute',
-        right: 10,
-    },
+    dropdownText: { fontSize: 16, color: '#333' },
     
     // 💡 Estilos do Footer (Fixo e com Botões)
     footer: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        backgroundColor: '#fff',
-        borderTopWidth: 1,
-        borderTopColor: '#eee',
-        padding: 15,
-        gap: 10,
+        flexDirection: 'row', justifyContent: 'flex-end', backgroundColor: '#fff', borderTopWidth: 1,
+        borderTopColor: '#eee', padding: 15, gap: 10,
     },
     footerButtonClose: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        borderRadius: 8,
-        backgroundColor: '#fff',
-        borderColor: '#ccc',
-        borderWidth: 1,
+        flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 10,
+        borderRadius: 8, backgroundColor: '#fff', borderColor: '#ccc', borderWidth: 1,
     },
-    footerButtonTextClose: {
-        marginLeft: 5,
-        color: '#333',
-        fontWeight: 'bold',
-    },
+    footerButtonTextClose: { marginLeft: 5, color: '#333', fontWeight: 'bold' },
     footerButtonSubmit: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        borderRadius: 8,
-        backgroundColor: '#0E6DB1',
+        flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 10,
+        borderRadius: 8, backgroundColor: '#0E6DB1',
     },
-    footerButtonTextSubmit: {
-        marginLeft: 5,
-        color: '#fff',
-        fontWeight: 'bold',
-    },
+    footerButtonTextSubmit: { marginLeft: 5, color: '#fff', fontWeight: 'bold' },
 });
