@@ -9,210 +9,211 @@ import { useAuth } from '../../context/AuthContext';
 import { type Comunicacao, type ComunicacaoForm } from '../../types/comunicacao';
 
 interface RouteParams {
-    post?: Comunicacao; 
+ post?: Comunicacao; 
 }
 
 const TIPOS_COMUNICACAO = [
-    { label: "Comunicado", value: "Comunicado" },
-    { label: "Aviso", value: "Aviso" },
-    { label: "Outros", value: "Outros" }
+ { label: "Comunicado", value: "Comunicado" },
+ { label: "Aviso", value: "Aviso" },
+ { label: "Outros", value: "Outros" }
 ];
 
 
 export function PostFormScreen() {
-    const route = useRoute();
-    const navigation = useNavigation();
-    const queryClient = useQueryClient();
+ const route = useRoute();
+ const navigation = useNavigation();
+ const queryClient = useQueryClient();
+ 
+ const { token, user } = useAuth();
+ 
+ // @ts-ignore
+ const { post } = (route.params || {}) as RouteParams;
+ const isEditing = !!post;
+ const [isTypeModalVisible, setIsTypeModalVisible] = useState(false); 
+
+
+ const [titulo, setTitulo] = useState(post?.titulo || '');
+ const [descricao, setDescricao] = useState(post?.descricao || ''); 
+ const [autor, setAutor] = useState(post?.autor || (user?.email || 'Professor Logado')); 
+ const [tipo, setTipo] = useState(post?.tipo || 'Comunicado'); 
+
+ const isProfessor = user?.role === 'professor';
+ 
+ 
+ const createMutation = useMutation({
+  mutationFn: (data: ComunicacaoForm) => apiCreatePost(data, token!),
+  onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['posts'] }); navigation.goBack(); },
+  onError: (error) => { Alert.alert("Erro", `Erro ao criar: ${error.message}`); }
+ });
+
+ const updateMutation = useMutation({
+  mutationFn: ({ id, data }: { id: string; data: ComunicacaoForm }) => apiUpdatePost(id, data, token!),
+  onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['posts'] }); navigation.goBack(); },
+  onError: (error) => { Alert.alert("Erro", `Erro ao editar: ${error.message}`); }
+ });
+
+ const isPending = createMutation.isPending || updateMutation.isPending;
+
+ 
+ const handleSubmit = () => {
+  if (!isProfessor) { Alert.alert("Erro", "Apenas professores podem criar/editar posts."); return; }
+  
+  const tiposValidos = TIPOS_COMUNICACAO.map(t => t.value);
+  if (!titulo || !descricao || !autor || !tipo || !tiposValidos.includes(tipo)) { 
+   Alert.alert("Erro", "Preencha todos os campos obrigatórios e selecione um Tipo válido.");
+   return;
+  }
+
+  const formData: any = { 
+   title: titulo, content: descricao, author: autor, tipo: tipo 
+  };
+
+  if (isEditing && post) {
+   updateMutation.mutate({ id: post.id, data: formData });
+  } else {
+   createMutation.mutate(formData);
+  }
+ };
+
+ 
+ useEffect(() => {
+  navigation.setOptions({
+   title: isEditing ? 'Editar Comunicação' : 'Nova Comunicação',
+   headerStyle: { backgroundColor: '#062E4B' },
+   headerTintColor: '#fff',
+  });
+ }, [isEditing, navigation]);
+
+ return (
+  <View style={styles.fullScreenContainer}>
+   <ScrollView style={styles.scrollViewContent}>
     
-    const { token, user } = useAuth();
+    <Text style={styles.label}>Título*</Text>
+    <TextInput style={styles.input} value={titulo} onChangeText={setTitulo} editable={!isPending} placeholder="Digite o título" />
+
+    <Text style={styles.label}>Descrição/Conteúdo</Text>
+    <TextInput
+     style={[styles.input, styles.textArea]}
+     value={descricao}
+     onChangeText={setDescricao}
+     multiline
+     numberOfLines={4}
+     editable={!isPending}
+     placeholder="Digite a descrição"
+    />
     
-    // @ts-ignore
-    const { post } = (route.params || {}) as RouteParams;
-    const isEditing = !!post;
-    const [isTypeModalVisible, setIsTypeModalVisible] = useState(false); 
+    <Text style={styles.label}>Autor*</Text>
+    <TextInput style={styles.input} value={autor} onChangeText={setAutor} editable={false} placeholder="Digite o autor" /> 
 
-
-    const [titulo, setTitulo] = useState(post?.titulo || '');
-    const [descricao, setDescricao] = useState(post?.descricao || ''); 
-    const [autor, setAutor] = useState(post?.autor || (user?.email || 'Professor Logado')); 
-    const [tipo, setTipo] = useState(post?.tipo || 'Comunicado'); 
-
-    const isProfessor = user?.role === 'professor';
+    <Text style={styles.label}>Tipo*</Text>
+    <TouchableOpacity style={styles.dropdownContainer} onPress={() => setIsTypeModalVisible(true)} disabled={isPending}>
+     <Text style={styles.dropdownText}>{tipo}</Text>
+    <Feather name="chevron-down" size={20} color="#666" style={styles.chevronIconStyle} />
+    </TouchableOpacity>
     
-    
-    const createMutation = useMutation({
-        mutationFn: (data: ComunicacaoForm) => apiCreatePost(data, token!),
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['posts'] }); navigation.goBack(); },
-        onError: (error) => { Alert.alert("Erro", `Erro ao criar: ${error.message}`); }
-    });
+   </ScrollView>
+   <TypeSelectModal
+    isVisible={isTypeModalVisible}
+    options={TIPOS_COMUNICACAO}
+    selectedValue={tipo}
+    onSelect={(value) => {
+     setTipo(value);
+     setIsTypeModalVisible(false);
+    }}
+    onClose={() => setIsTypeModalVisible(false)}
+   />
+   <View style={styles.footer}>
+    <TouchableOpacity 
+     style={styles.footerButtonClose} 
+     onPress={() => navigation.goBack()}
+     disabled={isPending}
+    >
+     <Feather name="x" size={20} color="#333" />
+     <Text style={styles.footerButtonTextClose}>Fechar</Text>
+    </TouchableOpacity>
 
-    const updateMutation = useMutation({
-        mutationFn: ({ id, data }: { id: string; data: ComunicacaoForm }) => apiUpdatePost(id, data, token!),
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['posts'] }); navigation.goBack(); },
-        onError: (error) => { Alert.alert("Erro", `Erro ao editar: ${error.message}`); }
-    });
-
-    const isPending = createMutation.isPending || updateMutation.isPending;
-
-    
-    const handleSubmit = () => {
-        if (!isProfessor) { Alert.alert("Erro", "Apenas professores podem criar/editar posts."); return; }
-        
-        if (!titulo || !descricao || !autor || !tipo || tipo === "") { 
-            Alert.alert("Erro", "Preencha todos os campos obrigatórios.");
-            return;
-        }
-
-        const formData: any = { 
-            title: titulo, content: descricao, author: autor, tipo: tipo 
-        };
-
-        if (isEditing && post) {
-            updateMutation.mutate({ id: post.id, data: formData });
-        } else {
-            createMutation.mutate(formData);
-        }
-    };
-
-    
-    useEffect(() => {
-        navigation.setOptions({
-            title: isEditing ? 'Editar Comunicação' : 'Nova Comunicação',
-            headerStyle: { backgroundColor: '#062E4B' },
-            headerTintColor: '#fff',
-        });
-    }, [isEditing, navigation]);
-
-    return (
-        <View style={styles.fullScreenContainer}>
-            <ScrollView style={styles.scrollViewContent}>
-                
-                <Text style={styles.label}>Título*</Text>
-                <TextInput style={styles.input} value={titulo} onChangeText={setTitulo} editable={!isPending} placeholder="Digite o título" />
-
-                <Text style={styles.label}>Descrição/Conteúdo</Text>
-                <TextInput
-                    style={[styles.input, styles.textArea]}
-                    value={descricao}
-                    onChangeText={setDescricao}
-                    multiline
-                    numberOfLines={4}
-                    editable={!isPending}
-                    placeholder="Digite a descrição"
-                />
-                
-                <Text style={styles.label}>Autor*</Text>
-                <TextInput style={styles.input} value={autor} onChangeText={setAutor} editable={false} placeholder="Digite o autor" /> 
-
-                <Text style={styles.label}>Tipo*</Text>
-                <TouchableOpacity style={styles.dropdownContainer} onPress={() => setIsTypeModalVisible(true)} disabled={isPending}>
-                    <Text style={styles.dropdownText}>{tipo}</Text>
-                   <Feather name="chevron-down" size={20} color="#666" style={styles.chevronIconStyle} />
-                </TouchableOpacity>
-                
-            </ScrollView>
-            <TypeSelectModal
-                isVisible={isTypeModalVisible}
-                options={TIPOS_COMUNICACAO}
-                selectedValue={tipo}
-                onSelect={(value) => {
-                    setTipo(value);
-                    setIsTypeModalVisible(false);
-                }}
-                onClose={() => setIsTypeModalVisible(false)}
-            />
-            <View style={styles.footer}>
-                <TouchableOpacity 
-                    style={styles.footerButtonClose} 
-                    onPress={() => navigation.goBack()}
-                    disabled={isPending}
-                >
-                    <Feather name="x" size={20} color="#333" />
-                    <Text style={styles.footerButtonTextClose}>Fechar</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                    style={styles.footerButtonSubmit} 
-                    onPress={handleSubmit} 
-                    disabled={isPending}
-                >
-                    {isPending ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <>
-                            <Ionicons name="add" size={20} color="#fff" />
-                            <Text style={styles.footerButtonTextSubmit}>{isEditing ? 'Salvar' : 'Adicionar'}</Text>
-                        </>
-                    )}
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
+    <TouchableOpacity 
+     style={styles.footerButtonSubmit} 
+     onPress={handleSubmit} 
+     disabled={isPending}
+    >
+     {isPending ? (
+      <ActivityIndicator color="#fff" />
+     ) : (
+      <>
+       <Ionicons name="add" size={20} color="#fff" />
+       <Text style={styles.footerButtonTextSubmit}>{isEditing ? 'Salvar' : 'Adicionar'}</Text>
+      </>
+     )}
+    </TouchableOpacity>
+   </View>
+  </View>
+ );
 }
 
 const styles = StyleSheet.create({
-    fullScreenContainer: { flex: 1, backgroundColor: '#f0f0f0' },
-    scrollViewContent: { flex: 1, paddingHorizontal: 20, paddingTop: 10 },
-    label: { fontSize: 16, fontWeight: 'bold', marginTop: 15, marginBottom: 5, color: '#333' },
-    input: {
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 10,
-        fontSize: 16,
-        marginBottom: 15,
-    },
-    textArea: { height: 100, textAlignVertical: 'top' },
-    
-   dropdownContainer: {
-        backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
-        height: 50, paddingHorizontal: 10, marginBottom: 15,
-        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    },
-    dropdownText: { fontSize: 16, color: '#333' },
-    
-    footer: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        backgroundColor: '#fff',
-        borderTopWidth: 1,
-        borderTopColor: '#eee',
-        padding: 15,
-        gap: 10,
-    },
-    footerButtonClose: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        borderRadius: 8,
-        backgroundColor: '#fff',
-        borderColor: '#ccc',
-        borderWidth: 1,
-    },
-    footerButtonTextClose: {
-        marginLeft: 5,
-        color: '#333',
-        fontWeight: 'bold',
-    },
-    footerButtonSubmit: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        borderRadius: 8,
-        backgroundColor: '#0E6DB1',
-    },
-    footerButtonTextSubmit: {
-        marginLeft: 5,
-        color: '#fff',
-        fontWeight: 'bold',
-    },
+ fullScreenContainer: { flex: 1, backgroundColor: '#f0f0f0' },
+ scrollViewContent: { flex: 1, paddingHorizontal: 20, paddingTop: 10 },
+ label: { fontSize: 16, fontWeight: 'bold', marginTop: 15, marginBottom: 5, color: '#333' },
+ input: {
+  backgroundColor: '#fff',
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 8,
+  padding: 10,
+  fontSize: 16,
+  marginBottom: 15,
+ },
+ textArea: { height: 100, textAlignVertical: 'top' },
+ 
+dropdownContainer: {
+  backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
+  height: 50, paddingHorizontal: 10, marginBottom: 15,
+  flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+ },
+ dropdownText: { fontSize: 16, color: '#333' },
+ 
+ footer: {
+  flexDirection: 'row',
+  justifyContent: 'flex-end',
+  backgroundColor: '#fff',
+  borderTopWidth: 1,
+  borderTopColor: '#eee',
+  padding: 15,
+  gap: 10,
+ },
+ footerButtonClose: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingHorizontal: 15,
+  paddingVertical: 10,
+  borderRadius: 8,
+  backgroundColor: '#fff',
+  borderColor: '#ccc',
+  borderWidth: 1,
+ },
+ footerButtonTextClose: {
+  marginLeft: 5,
+  color: '#333',
+  fontWeight: 'bold',
+ },
+ footerButtonSubmit: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingHorizontal: 15,
+  paddingVertical: 10,
+  borderRadius: 8,
+  backgroundColor: '#0E6DB1',
+ },
+ footerButtonTextSubmit: {
+  marginLeft: 5,
+  color: '#fff',
+  fontWeight: 'bold',
+ },
 
-    chevronIconStyle: {
-        position: 'absolute',
-        right: 10,
-        marginRight: 5,
-    },
+ chevronIconStyle: {
+  position: 'absolute',
+  right: 10,
+  marginRight: 5,
+ },
 });
